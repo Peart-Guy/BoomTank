@@ -7,7 +7,7 @@ import math
 pygame.init()
 
 # Screen settings
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 800, 770
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Tank Fight")
 
@@ -25,9 +25,14 @@ FPS = 60
 # Fonts
 font = pygame.font.SysFont("Arial", 40)
 
-# Load tank images
-tank_red = pygame.transform.scale(pygame.image.load("red_tank.png"), (50, 50))
-tank_blue = pygame.transform.scale(pygame.image.load("blue_tank.png"), (50, 50))
+# Load assets
+tank_red = pygame.transform.scale(pygame.image.load("assets/red_tank.png"), (50, 50))
+tank_blue = pygame.transform.scale(pygame.image.load("assets/blue_tank.png"), (50, 50))
+
+# Map backgrounds
+desert_map = pygame.transform.scale(pygame.image.load("assets/desert.png"), (WIDTH, HEIGHT))
+forest_map = pygame.transform.scale(pygame.image.load("assets/forest.png"), (WIDTH, HEIGHT))
+
 bullet_img = pygame.Surface((10, 4))
 bullet_img.fill(BLACK)
 
@@ -41,6 +46,7 @@ GAME_OVER = "game_over"
 game_state = MENU
 player_color = None
 winner = None
+selected_map = None  # NEW
 
 # Tank Class
 class Tank:
@@ -55,7 +61,6 @@ class Tank:
         self.bullets = []
         self.last_shot_time = 0
         self.shoot_delay = 200  # milliseconds
-        
 
     def draw(self):
         rotated_image = pygame.transform.rotate(self.image, -self.angle)
@@ -66,9 +71,6 @@ class Tank:
         pygame.draw.rect(screen, RED, (self.x - 25, self.y - 40, 50, 8))
         pygame.draw.rect(screen, GREEN, (self.x - 25, self.y - 40, 50 * (self.health / 100), 8))
 
-
-
-    #shhot
     def shoot(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_shot_time >= self.shoot_delay:
@@ -76,14 +78,11 @@ class Tank:
             dy = math.sin(math.radians(self.angle))   # Y direction
 
             # Offset from the tank center to the barrel tip
-            barrel_length = 30  # adjust based on your tank image size
+            barrel_length = 30
             offset_x = dx * barrel_length
             offset_y = dy * barrel_length
 
-            # Add bullet starting at the barrel tip
             self.bullets.append([self.x + offset_x, self.y + offset_y, dx, dy])
-
-            # Update last shot time
             self.last_shot_time = current_time
 
     def update_bullets(self, opponent):
@@ -99,7 +98,7 @@ class Tank:
         for bullet in self.bullets:
             pygame.draw.rect(screen, BLACK, (bullet[0], bullet[1], 6, 3))
 
-# Main menu
+# UI Screens
 def draw_menu():
     screen.fill(WHITE)
     title = font.render("Tank Fight", True, BLACK)
@@ -110,21 +109,23 @@ def draw_menu():
     screen.blit(quit_game, (WIDTH//2 - quit_game.get_width()//2, 320))
     pygame.display.flip()
 
-# Tank selection
 def draw_tank_select():
     screen.fill(WHITE)
     text = font.render("Choose Tank: 1. Red  2. Blue", True, BLACK)
     screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - 50))
     pygame.display.flip()
 
-# Map selection
 def draw_map_select():
     screen.fill(WHITE)
-    text = font.render("Choose Map: 1. Desert (only map)", True, BLACK)
-    screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2 - 50))
+    text = font.render("Choose Map:", True, BLACK)
+    screen.blit(text, (WIDTH//2 - text.get_width()//2, 100))
+
+    desert_text = font.render("1. Desert", True, BLACK)
+    forest_text = font.render("2. Forest", True, BLACK)
+    screen.blit(desert_text, (WIDTH//2 - desert_text.get_width()//2, 250))
+    screen.blit(forest_text, (WIDTH//2 - forest_text.get_width()//2, 320))
     pygame.display.flip()
 
-# Game over
 def draw_game_over():
     screen.fill(WHITE)
     text = font.render(f"{winner} Won!", True, BLACK)
@@ -142,8 +143,6 @@ enemy_tank = None
 # Main loop
 running = True
 while running:
-    screen.fill(WHITE)
-
     if game_state == MENU:
         draw_menu()
 
@@ -154,7 +153,11 @@ while running:
         draw_map_select()
 
     elif game_state == PLAYING:
-        screen.fill((180, 180, 150))  # Map color
+        # Draw selected map
+        if selected_map == "desert":
+            screen.blit(desert_map, (0, 0))
+        elif selected_map == "forest":
+            screen.blit(forest_map, (0, 0))
 
         # Draw tanks
         player_tank.draw()
@@ -162,71 +165,52 @@ while running:
 
         # Controls
         keys = pygame.key.get_pressed()
-
         dx, dy = 0, 0
 
-        # Determine movement direction
-        if keys[pygame.K_w]:
-            dy = -1
-        if keys[pygame.K_s]:
-            dy = 1
-        if keys[pygame.K_a]:
-            dx = -1
-        if keys[pygame.K_d]:
-            dx = 1
+        if keys[pygame.K_w]: dy = -1
+        if keys[pygame.K_s]: dy = 1
+        if keys[pygame.K_a]: dx = -1
+        if keys[pygame.K_d]: dx = 1
 
-        # Move and set angle
         if dx != 0 or dy != 0:
-            # Normalize diagonal movement
             length = (dx**2 + dy**2) ** 0.5
             dx /= length
             dy /= length
 
             player_tank.x += player_tank.speed * dx
             player_tank.y += player_tank.speed * dy
-
-            # Set angle based on direction
             player_tank.angle = (-math.degrees(math.atan2(-dy, dx))) % 360
-                    
-        # Boundary check (prevents going out of map)
+
+        # Boundary check
         player_tank.x = max(25, min(WIDTH - 25, player_tank.x))
         player_tank.y = max(25, min(HEIGHT - 25, player_tank.y))
 
-
-
-        # Enemy AI (smart movement and aiming)
+        # Enemy AI
         dx = player_tank.x - enemy_tank.x
         dy = player_tank.y - enemy_tank.y
         distance = math.hypot(dx, dy)
 
-        # Calculate target angle
         target_angle = math.degrees(math.atan2(-dy, dx))
         angle_diff = (target_angle - enemy_tank.angle + 360) % 360
         if angle_diff > 180:
             angle_diff -= 360
 
-        # Rotate towards player
         if angle_diff > 2:
             enemy_tank.angle += 2
         elif angle_diff < -2:
             enemy_tank.angle -= 2
 
-        # Move closer if far away
         if distance > 200:
             enemy_tank.x += enemy_tank.speed * math.cos(math.radians(enemy_tank.angle))
             enemy_tank.y -= enemy_tank.speed * math.sin(math.radians(enemy_tank.angle))
 
-        # Shoot when aligned (angle difference small)
         if abs(angle_diff) < 10 and random.randint(0, 15) == 0:
             enemy_tank.shoot()
-
-
 
         # Update bullets
         player_tank.update_bullets(enemy_tank)
         enemy_tank.update_bullets(player_tank)
 
-        # Check winner
         if player_tank.health <= 0:
             winner = "Computer"
             game_state = GAME_OVER
@@ -239,7 +223,6 @@ while running:
     elif game_state == GAME_OVER:
         draw_game_over()
 
-    # Events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -258,13 +241,19 @@ while running:
                     game_state = MAP_SELECT
             elif game_state == MAP_SELECT:
                 if event.key == pygame.K_1:
+                    selected_map = "desert"
+                    player_tank = Tank(100, HEIGHT//2, player_color)
+                    enemy_color = "blue" if player_color == "red" else "red"
+                    enemy_tank = Tank(WIDTH - 100, HEIGHT//2, enemy_color)
+                    game_state = PLAYING
+                elif event.key == pygame.K_2:
+                    selected_map = "forest"
                     player_tank = Tank(100, HEIGHT//2, player_color)
                     enemy_color = "blue" if player_color == "red" else "red"
                     enemy_tank = Tank(WIDTH - 100, HEIGHT//2, enemy_color)
                     game_state = PLAYING
             elif game_state == PLAYING:
-                keys = pygame.key.get_pressed()
-                if keys[pygame.K_SPACE]:
+                if event.key == pygame.K_SPACE:
                     player_tank.shoot()
             elif game_state == GAME_OVER:
                 if event.key == pygame.K_1:
