@@ -9,7 +9,7 @@ pygame.init()
 # Screen settings
 WIDTH, HEIGHT = 800, 770
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Tank Fight")
+pygame.display.set_caption("BOOMTANK")
 
 # Colors
 WHITE = (255, 255, 255)
@@ -73,7 +73,7 @@ class Tank:
         self.health = 100
         self.bullets = []
         self.last_shot_time = 0
-        self.shoot_delay = 200  # milliseconds
+        self.shoot_delay = 200 
 
     def draw(self):
         rotated_image = pygame.transform.rotate(self.image, -self.angle)
@@ -166,7 +166,7 @@ def draw_game_over(mouse_pos):
     pygame.display.flip()
 
 def draw_pause_menu(mouse_pos):
-    pygame.draw.rect(screen, (0, 0, 0, 150), (0, 0, WIDTH, HEIGHT))  # Semi-transparent overlay
+    pygame.draw.rect(screen, (0, 0, 0, 150), (0, 0, WIDTH, HEIGHT))  
     text = font.render("PAUSED", True, WHITE)
     screen.blit(text, (WIDTH//2 - text.get_width()//2, 200))
 
@@ -256,9 +256,8 @@ while running:
         player_tank.y = max(25, min(HEIGHT - 25, player_tank.y))
 
         # ---------------------------
-        # Enemy AI (always tracks player, cannot be tricked by sneaking behind)
-        # ---------------------------
-
+        # Enemy AI 
+ 
         dx = player_tank.x - enemy_tank.x
         dy = player_tank.y - enemy_tank.y
         distance = math.hypot(dx, dy)
@@ -299,7 +298,7 @@ while running:
                 enemy_tank.y -= enemy_tank.speed * math.sin(math.radians(enemy_tank.angle))
 
             elif 120 < distance <= 250:
-                # Strafe (circle) around the player
+                # Strafe  around the player
                 if ((pygame.time.get_ticks() // 500) % 2) == 0:
                     strafe_angle = enemy_tank.angle + 90
                 else:
@@ -316,7 +315,7 @@ while running:
         enemy_tank.x = max(25, min(WIDTH - 25, enemy_tank.x))
         enemy_tank.y = max(25, min(HEIGHT - 25, enemy_tank.y))
 
-        # Shooting logic (only shoot if nearly aligned)
+        # Shooting logic 
         if abs(angle_diff) < 6:
             if distance < 140:
                 enemy_tank.shoot()
@@ -325,10 +324,6 @@ while running:
                 if random.randint(0, chance) == 0:
                     enemy_tank.shoot()
 
-
-
-
-      
 
 
         player_tank.update_bullets(enemy_tank)
@@ -354,7 +349,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left-click
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  
             if game_state == MENU:
                 if start_rect.collidepoint(mouse_pos):
                     game_state = TANK_SELECT
