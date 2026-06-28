@@ -20,5 +20,6 @@ A small Tank Game built in Python for fun
 # First Look SS
 <img width="402" height="280" alt="image" src="https://github.com/user-attachments/assets/e12260a4-320e-494b-a43e-8cf7656d45cd" />
 
-
+# Current Look SS
+<img width="402" height="402" alt="Screenshot 2026-06-28 230750" src="https://github.com/user-attachments/assets/899567d3-9f88-4736-bc3b-80a42d86c0a7" />
 
