@@ -4,10 +4,17 @@ A small Tank Game built in Python for fun
 
 # 🛠️ Tech Stack
 
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Pygame](https://img.shields.io/badge/Pygame-1A1A1A?style=for-the-badge&logo=pygame&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+- **Language:** Python 3
+- **Game Engine / Framework:** Pygame
+- **Graphics:** Pygame Surface, Transform & Rendering APIs
+- **Audio:** Pygame Mixer (Sound Effects & Background Music)
+- **Input Handling:** Keyboard & Game Controller (Joystick API)
+- **Game Logic:** Object-Oriented Programming (OOP)
+- **AI:** Rule-Based Enemy AI with Pathfinding & Combat Logic
+- **Physics & Mathematics:** Python `math` module (Rotation, Angles, Collision Detection)
+- **Randomization:** Python `random` module
+- **Version Control:** Git
+- **Repository Hosting:** GitHub
 
 
 # First Look SS
